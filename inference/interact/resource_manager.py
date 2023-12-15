@@ -11,7 +11,7 @@ import numpy as np
 
 from util.palette import davis_palette
 import progressbar
- 
+from tqdm import tqdm 
 
 # https://bugs.python.org/issue28178
 # ah python ah why
@@ -124,7 +124,8 @@ class ResourceManager:
     def _copy_resize_frames(self, images):
         image_list = os.listdir(images)
         print(f'Copying/resizing frames into {self.image_dir}...')
-        for image_name in progressbar.progressbar(image_list):
+        # for image_name in progressbar.progressbar(image_list):
+        for image_name in tqdm(image_list):
             if self.size < 0:
                 # just copy
                 shutil.copy2(path.join(images, image_name), self.image_dir)
@@ -143,8 +144,9 @@ class ResourceManager:
         assert 0 <= ti < self.length
         assert isinstance(mask, np.ndarray)
 
+        # only single channel 
         mask = Image.fromarray(mask)
-        mask.putpalette(self.palette)
+        # mask.putpalette(self.palette)
         mask.save(path.join(self.mask_dir, self.names[ti]+'.png'))
         self.invalidate(ti)
 
@@ -164,7 +166,10 @@ class ResourceManager:
         # returns H*W*3 uint8 array
         assert 0 <= ti < self.length
 
-        image = Image.open(path.join(self.image_dir, self.names[ti]+'.jpg'))
+        try:
+            image = Image.open(path.join(self.image_dir, self.names[ti]+'.jpg'))
+        except:
+            image = Image.open(path.join(self.image_dir, self.names[ti]+'.png'))
         image = np.array(image)
         return image
 

@@ -419,6 +419,17 @@ class App(QWidget):
             if loaded_mask is None:
                 self.current_mask.fill(0)
             else:
+                # TODO Dusan: another workaround
+                if(loaded_mask.max() > self.num_objects+1):
+                    min_val, max_val = loaded_mask.min(), loaded_mask.max()
+
+                    # Calculate the width of each bin
+                    bin_width = (max_val - min_val) / self.num_objects
+
+                    # Map each value to a class
+                    loaded_mask = ((loaded_mask - min_val) / bin_width).clip(0, self.num_objects).astype(np.int64)
+
+
                 self.current_mask = loaded_mask.copy()
             self.current_prob = None
 
@@ -551,7 +562,8 @@ class App(QWidget):
 
     def save_current_mask(self):
         # save mask to hard disk
-        self.res_man.save_mask(self.cursur, self.current_mask)
+        
+        self.res_man.save_mask(self.cursur, self.current_mask * 255)
 
     def tl_slide(self):
         # if we are propagating, the on_run function will take care of everything
